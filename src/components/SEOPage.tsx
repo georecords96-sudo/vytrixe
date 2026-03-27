@@ -9,11 +9,10 @@ import { Hero } from "@/components/Hero";
 import { ResultCard } from "@/components/ResultCard";
 import { AdsterraAds } from "@/components/AdsterraAds";
 import { AdNative } from "@/components/AdNative";
-import { AdPlaceholder } from "@/components/AdPlaceholder";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorAlert } from "@/components/ErrorAlert";
 import { VideoInfo } from "@/lib/video";
-import { ADS_CONFIG } from "@/lib/adsConfig";
+import { ADS_SCRIPTS } from "@/lib/adsConfig";
 
 interface SEOPageProps {
   platform: string;
@@ -110,9 +109,9 @@ export function SEOPage({ platform, title, subtitle, content, faqData }: SEOPage
         )}
 
         <AdsterraAds 
-          zoneId={ADS_CONFIG.BANNER_MID.id} 
-          format={ADS_CONFIG.BANNER_MID.format}
-          minHeight={ADS_CONFIG.BANNER_MID.minHeight}
+          zoneId={ADS_SCRIPTS.BANNER_MID.key} 
+          format={ADS_SCRIPTS.BANNER_MID.format}
+          minHeight={ADS_SCRIPTS.BANNER_MID.minHeight}
           className="my-12"
         />
 

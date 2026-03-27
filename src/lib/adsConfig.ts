@@ -1,47 +1,48 @@
 /**
- * VYTRIXE Adsterra Configuration
+ * VYTRIXE Adsterra Configuration (Scripts)
  * Centralized registry for ad placement Zone IDs and tokens.
- * Update these with your actual Adsterra dashboard values.
  */
 
-export const ADS_CONFIG = {
-  // Banner 728x90 (Desktop) / 320x50 (Mobile)
+export const ADS_SCRIPTS = {
+  // Top Banner (Hero)
   BANNER_TOP: {
-    id: "YOUR_ADSTERRA_KEY_HERE",
+    key: "YOUR_ADSTERRA_KEY_HERE",
     format: "728x90",
-    mobileFormat: "320x50",
+    id: "adsterra-banner-top",
     minHeight: "90px"
   },
-  
-  // Banner 728x90 or Rectangular
+
+  // Mid Content Banner (SEO Pages)
   BANNER_MID: {
-    id: "YOUR_ADSTERRA_KEY_HERE",
+    key: "YOUR_ADSTERRA_KEY_HERE",
     format: "728x90",
+    id: "adsterra-banner-mid",
     minHeight: "90px"
   },
-  
-  // Bottom Wide Banner
+
+  // Bottom Banner (Pre-Footer)
   BANNER_BOTTOM: {
-    id: "YOUR_ADSTERRA_KEY_HERE",
+    key: "YOUR_ADSTERRA_KEY_HERE",
     format: "728x90",
+    id: "adsterra-banner-bottom",
     minHeight: "90px"
   },
-  
-  // Native Ad Block (Grid)
+
+  // Native Ad Block
   NATIVE: {
-    id: "YOUR_ADSTERRA_KEY_HERE",
-    count: 4,
+    key: "YOUR_ADSTERRA_KEY_HERE",
+    id: "adsterra-native-block",
     minHeight: "250px"
   },
-  
+
   // Popunder (Capped 1/24h)
   POPUNDER: {
-    id: "YOUR_ADSTERRA_KEY_HERE",
-    frequencyMinutes: 1440 // 24 Hours
-  },
-  
-  // Social Bar / Direct Link placeholders if needed
-  SOCIAL_BAR: {
-    id: "YOUR_ADSTERRA_KEY_HERE"
+    key: "YOUR_ADSTERRA_KEY_HERE",
+    id: "adsterra-popunder-script"
   }
+};
+
+// Global Frequency Config
+export const ADS_FREQUENCY = {
+  POPUNDER_MS: 24 * 60 * 60 * 1000, // 24 Hours
 };

@@ -2,25 +2,31 @@
 
 import React, { useEffect, useRef } from "react";
 import { getCookieConsentValue } from "react-cookie-consent";
-import { ADS_CONFIG } from "@/lib/adsConfig";
+import { ADS_SCRIPTS } from "@/lib/adsConfig";
 
 export function AdNative() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // 1. Consent Validation
     if (getCookieConsentValue("vytrixe_cookie_consent") !== "true") return;
     if (!containerRef.current) return;
+
+    // 2. Duplicate Check
     if (containerRef.current.hasChildNodes()) return;
 
     try {
+      // 3. Atomic Injection
       const script = document.createElement("script");
       script.async = true;
       script.dataset.cfasync = "false";
-      script.src = `//www.highperformanceformat.com/${ADS_CONFIG.NATIVE.id}/invoke.js`;
+      script.src = `//www.highperformanceformat.com/${ADS_SCRIPTS.NATIVE.key}/invoke.js`;
+      script.id = ADS_SCRIPTS.NATIVE.id;
       
       containerRef.current.appendChild(script);
+      console.log(`💰 VYTRIXE: Native Ad [${ADS_SCRIPTS.NATIVE.key}] injected.`);
     } catch (err) {
-      console.error("Native Ad Error:", err);
+      console.error("Adsterra Native Error:", err);
     }
   }, []);
 
@@ -35,7 +41,6 @@ export function AdNative() {
         ref={containerRef} 
         className="min-h-[250px] w-full rounded-3xl bg-gray-50/50 border border-gray-100 p-4 transition-all hover:bg-gray-50 flex items-center justify-center text-gray-300 italic text-sm"
       >
-        {/* Adsterra will inject the native grid here */}
         Waiting for content...
       </div>
     </div>
