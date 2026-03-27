@@ -1,12 +1,8 @@
 import Link from "next/link";
-import Image from "next/image";
-import { useState } from "react";
 import { Globe, Share2, Mail, Play } from "lucide-react";
-import { AdPlaceholder } from "./AdPlaceholder";
+import { AdPlaceholder } from "@/components/AdPlaceholder";
 
 export function Footer() {
-  const [logoError, setLogoError] = useState(false);
-
   return (
     <footer className="border-t border-gray-100 bg-white py-12">
       <div className="container mx-auto px-4 sm:px-6">
@@ -19,20 +15,11 @@ export function Footer() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/30 transition-shadow">
                 <Play size={16} fill="currentColor" />
               </div>
-              {!logoError ? (
-                <Image
-                  src="/logo.png"
-                  alt="VYTRIXE logo"
-                  width={120}
-                  height={40}
-                  className="h-7 sm:h-8 w-auto object-contain"
-                  onError={() => setLogoError(true)}
-                />
-              ) : (
-                <span className="text-xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-                  VYTRIXE
-                </span>
-              )}
+              <img 
+                src="/logo.png" 
+                alt="Vytrixe" 
+                className="h-8 w-auto" 
+              />
             </Link>
             <p className="max-w-xs text-sm leading-relaxed text-gray-500">
               The fastest and most reliable way to download videos from TikTok, Instagram, YouTube, Facebook and Pinterest with Vytrixe. High quality, zero clutter.
