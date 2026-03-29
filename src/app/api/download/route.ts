@@ -1,58 +1,62 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getVideoInfo, getVideoMeta, cleanupTempFiles } from "@/lib/video";
+import { exec } from "child_process";
 
-// Basic in-memory rate limiting
-const rateLimitMap = new Map<string, { count: number; lastReset: number }>();
-const LIMIT = 20; // 20 requests
-const WINDOW = 60 * 1000; // per 1 minute
+/**
+ * Detects the platform and returns the appropriate yt-dlp command.
+ * Use yt-dlp.exe for Windows (local) and yt-dlp for Linux (VPS).
+ */
+function getYtDlpCommand(url: string) {
+  const isWindows = process.platform === "win32";
+  const cmd = isWindows ? "yt-dlp.exe" : "yt-dlp";
+  return `${cmd} -j "${url}"`;
+}
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     const { url } = await req.json();
-    const ip = req.headers.get("x-forwarded-for") || "anonymous";
 
-    // Rate limiting check
-    const now = Date.now();
-    const rateData = rateLimitMap.get(ip) || { count: 0, lastReset: now };
-    
-    if (now - rateData.lastReset > WINDOW) {
-      rateData.count = 0;
-      rateData.lastReset = now;
-    }
-
-    if (rateData.count >= LIMIT) {
-      return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
-    }
-
-    rateData.count++;
-    rateLimitMap.set(ip, rateData);
-
-    // URL Validation
     if (!url) {
-      return NextResponse.json({ error: "URL is required" }, { status: 400 });
+      return Response.json({ error: "No URL provided" }, { status: 400 });
     }
 
-    const isValidUrl = /^https?:\/\/.+/i.test(url);
-    if (!isValidUrl) {
-      return NextResponse.json(
-        { error: "Invalid URL. Please paste a valid video link from TikTok, Instagram, YouTube, Facebook or Pinterest." },
-        { status: 400 }
-      );
-    }
+    const command = getYtDlpCommand(url);
 
-    // Trigger cleanup (async, don't wait)
-    cleanupTempFiles().catch(console.error);
+    return new Promise((resolve) => {
+      exec(command, (error, stdout, stderr) => {
+        if (error) {
+          const isWindows = process.platform === "win32";
+          
+          // Friendly error message for missing local yt-dlp
+          if (isWindows && stderr.includes("not recognized")) {
+            return resolve(
+              Response.json({ 
+                error: "Local environment error: install yt-dlp.exe or verify it's in your PATH. On VPS, it will work automatically." 
+              }, { status: 500 })
+            );
+          }
+          
+          console.error("YT-DLP ERROR:", stderr);
+          return resolve(Response.json({ error: "Failed to process video: " + stderr }, { status: 500 }));
+        }
 
-    // Support staged progressive loading
-    const { isMeta } = await (req.json().catch(() => ({})));
-    const info = isMeta ? await getVideoMeta(url) : await getVideoInfo(url);
-    
-    return NextResponse.json(info);
-  } catch (error: any) {
-    console.error("Download Error:", error);
-    return NextResponse.json(
-      { error: error.message || "Failed to fetch video information. Make sure the URL is valid and public." },
-      { status: 500 }
-    );
+        try {
+          const data = JSON.parse(stdout);
+          resolve(
+            Response.json({
+              title: data.title,
+              thumbnail: data.thumbnail,
+              url: data.url,
+              duration: data.duration,
+              platform: data.extractor_key
+            })
+          );
+        } catch (parseError) {
+          console.error("JSON parse error:", parseError);
+          resolve(Response.json({ error: "Invalid response from video processor" }, { status: 500 }));
+        }
+      });
+    });
+  } catch (err) {
+    console.error("Server error:", err);
+    return Response.json({ error: "Server error" }, { status: 500 });
   }
 }

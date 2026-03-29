@@ -15,7 +15,7 @@ export function ErrorAlert({ message, onClear }: ErrorAlertProps) {
           <AlertCircle size={20} />
         </div>
         <div className="flex-1">
-          <h4 className="text-sm font-bold text-red-900">Something went wrong</h4>
+          <h4 className="text-sm font-bold text-red-900">Unable to process video. Try another link.</h4>
           <p className="text-xs text-red-700 mt-0.5">{message}</p>
         </div>
         <button 

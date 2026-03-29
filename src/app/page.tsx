@@ -14,30 +14,50 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
+  const [videoUrl, setVideoUrl] = useState("");
 
   const handleSearch = async (url: string) => {
+    // 0. Store the original search URL
+    setVideoUrl(url);
+    // 1. URL Validation
+    if (!url.includes("http")) {
+      setError("Please enter a valid URL including http:// or https://");
+      return;
+    }
+
+    // 2. Strict Domain Whitelist
+    const allowedDomains = [
+      "tiktok.com",
+      "instagram.com",
+      "youtube.com",
+      "youtu.be",
+      "facebook.com",
+      "pinterest.com"
+    ];
+
+    const isAllowed = allowedDomains.some(domain => url.toLowerCase().includes(domain));
+    if (!isAllowed) {
+      setError("Supported platforms: TikTok, Instagram, YouTube, Facebook, and Pinterest.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setVideoInfo(null);
 
     try {
-      // Stage 1: Fast Meta Fetch
-      const metaResponse = await axios.post("/api/download", { url, isMeta: true });
-      setVideoInfo(metaResponse.data);
-      setLoading(false); // Immediate visual feedback
-
-      // Stage 2: Background Full Info Fetch
-      try {
-        const fullResponse = await axios.post("/api/download", { url, isMeta: false });
-        setVideoInfo(fullResponse.data);
-      } catch (err) {
-        console.error("Failed to fetch full quality options", err);
+      const response = await axios.post("/api/download", { url });
+      
+      if (response.data && response.data.url) {
+        setVideoInfo(response.data);
+        setLoading(false);
+      } else {
+        throw new Error(response.data.error || "Video URL not found.");
       }
     } catch (err: any) {
-      const msg = err.response?.data?.error || "Failed to process video. Please check the URL and try again.";
+      const msg = err.response?.data?.error || err.message || "Unable to fetch video. Try another link.";
       setError(msg);
       setLoading(false);
-      setVideoInfo(null);
     }
   };
 
@@ -67,7 +87,7 @@ export default function Home() {
         
         {videoInfo && !loading && (
           <div className="max-w-5xl mx-auto">
-            <ResultCard info={videoInfo} onReset={reset} />
+            <ResultCard info={videoInfo} videoUrl={videoUrl} onReset={reset} />
           </div>
         )}
 

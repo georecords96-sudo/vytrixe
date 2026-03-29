@@ -14,19 +14,9 @@ const execPromise = promisify(exec);
 export interface VideoInfo {
   title: string;
   thumbnail: string;
-  duration: number;
   url: string;
-  platform: string;
-  formats?: {
-    url: string;
-    ext: string;
-    quality: string;
-    filesize: number;
-    format_id: string;
-    height?: number;
-    vcodec?: string;
-    acodec?: string;
-  }[];
+  duration?: number;
+  platform?: string;
 }
 
 const PLATFORM_MAP: Record<string, string> = {
@@ -79,6 +69,7 @@ export async function getVideoMeta(videoUrl: string): Promise<VideoInfo> {
       thumbnail: data.thumbnail,
       duration: data.duration || 0,
       url: videoUrl,
+      originalUrl: videoUrl,
       platform: PLATFORM_MAP[data.extractor_key.toLowerCase()] || data.extractor_key,
     };
 
@@ -115,6 +106,7 @@ export async function getVideoInfo(videoUrl: string): Promise<VideoInfo> {
       thumbnail: data.thumbnail,
       duration: data.duration,
       url: videoUrl,
+      originalUrl: videoUrl,
       platform: PLATFORM_MAP[data.extractor_key.toLowerCase()] || data.extractor_key,
       formats: (data.formats || [])
         .filter((f: any) => f.vcodec !== "none" || f.acodec !== "none")

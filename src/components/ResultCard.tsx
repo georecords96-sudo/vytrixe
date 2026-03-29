@@ -1,17 +1,24 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Download, Play, Music, ExternalLink, ArrowLeft } from "lucide-react";
+import { Download, Play, ExternalLink, ArrowLeft } from "lucide-react";
 import { VideoInfo } from "@/lib/video";
 import Image from "next/image";
 import { AdPlaceholder } from "./AdPlaceholder";
 
 interface ResultCardProps {
   info: VideoInfo;
+  videoUrl: string;
   onReset: () => void;
 }
 
-export function ResultCard({ info, onReset }: ResultCardProps) {
+export function ResultCard({ info, videoUrl, onReset }: ResultCardProps) {
+  const handleDownload = () => {
+    if (info.url) {
+      window.open(info.url, "_blank");
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -29,29 +36,40 @@ export function ResultCard({ info, onReset }: ResultCardProps) {
       <div className="overflow-hidden rounded-3xl bg-white shadow-soft border border-gray-100">
         <div className="flex flex-col md:flex-row">
           {/* Preview Section */}
-          <div className="relative aspect-video w-full md:w-1/2 bg-gray-900">
-            <Image
-              src={info.thumbnail}
-              alt={info.title}
-              fill
-              className="object-cover opacity-80"
-              unoptimized
-            />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20 backdrop-blur-md text-white border border-white/30">
-                <Play size={24} fill="white" />
+          <div className="relative aspect-video w-full md:w-1/2 bg-gray-900 overflow-hidden">
+            {info.thumbnail ? (
+              <Image
+                src={info.thumbnail}
+                alt={info.title || "preview"}
+                fill
+                className="object-cover opacity-80"
+                unoptimized
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-2">
+                <Play size={24} className="opacity-20" />
+                <span className="text-xs font-bold uppercase tracking-widest opacity-50">No preview available</span>
               </div>
-            </div>
-            <div className="absolute bottom-4 left-4 rounded-lg bg-black/60 px-3 py-1 text-xs font-bold text-white backdrop-blur-sm">
-              {Math.floor(info.duration / 60)}:{(info.duration % 60).toString().padStart(2, '0')}
-            </div>
+            )}
+            {info.thumbnail && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20 backdrop-blur-md text-white border border-white/30">
+                  <Play size={24} fill="white" />
+                </div>
+              </div>
+            )}
+            {info.duration && (
+              <div className="absolute bottom-4 left-4 rounded-lg bg-black/60 px-3 py-1 text-xs font-bold text-white backdrop-blur-sm z-10">
+                {Math.floor(info.duration / 60)}:{(info.duration % 60).toString().padStart(2, '0')}
+              </div>
+            )}
           </div>
 
           {/* Details Section */}
           <div className="flex flex-col p-8 md:w-1/2">
             <div className="flex items-center gap-2 mb-4">
               <span className="rounded-full bg-blue-100 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-blue-600">
-                {info.platform}
+                {info.platform || "Video Ready"}
               </span>
             </div>
             <h2 className="text-xl font-bold text-gray-900 leading-tight mb-4">
@@ -59,103 +77,34 @@ export function ResultCard({ info, onReset }: ResultCardProps) {
             </h2>
 
             <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-2">
-              Click download to save your video instantly
+              Ready to download instantly
             </p>
 
             <div className="space-y-4 mt-auto">
-              {!info.formats || info.formats.length === 0 ? (
-                <div className="space-y-4 py-6">
-                  <div className="flex items-center gap-3 text-blue-600 animate-pulse">
-                    <div className="h-5 w-5 rounded-full border-2 border-t-transparent border-blue-600 animate-spin" />
-                    <span className="text-sm font-bold">Fetching video quality options...</span>
+              <motion.button
+                onClick={handleDownload}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full relative flex items-center justify-between rounded-2xl border border-blue-200 bg-blue-50/30 p-4 transition-all group hover:bg-blue-50"
+              >
+                <span className="absolute -top-2.5 right-4 rounded-full bg-blue-600 px-3 py-0.5 text-[10px] font-bold text-white shadow-lg z-10">
+                  HD Quality
+                </span>
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm transition-colors">
+                    <Download size={20} />
                   </div>
-                  <div className="space-y-3">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="h-16 w-full rounded-2xl bg-gray-50 border border-gray-100 animate-pulse" />
-                    ))}
+                  <div className="text-left">
+                    <p className="text-sm font-black text-gray-900">Descargar Video</p>
+                    <p className="text-[11px] font-bold text-gray-400">
+                      Enlace directo • Alta velocidad
+                    </p>
                   </div>
                 </div>
-              ) : (
-                (() => {
-                  const getQualityLabel = (h?: number) => {
-                    if (!h) return "Best Quality";
-                    if (h >= 2160) return "4K";
-                    if (h >= 1440) return "2K";
-                    if (h >= 1080) return "1080p";
-                    if (h >= 720) return "720p";
-                    return "SD";
-                  };
-
-                  const uniqueFormats = Array.from(
-                    info.formats
-                      .reduce((acc, current) => {
-                        const label = getQualityLabel(current.height);
-                        const existing = acc.get(label);
-                        if (!existing) {
-                          acc.set(label, current);
-                        } else {
-                          if (current.ext === 'mp4' && existing.ext !== 'mp4') {
-                            acc.set(label, current);
-                          } else if (current.ext === existing.ext && (current.height || 0) > (existing.height || 0)) {
-                            acc.set(label, current);
-                          }
-                        }
-                        return acc;
-                      }, new Map<string, NonNullable<typeof info.formats>[number]>())
-                      .values()
-                  ).sort((a, b) => {
-                    const hA = a.height || 0;
-                    const hB = b.height || 0;
-                    if (hA !== hB) return hB - hA;
-                    if (a.ext === 'mp4' && b.ext !== 'mp4') return -1;
-                    return 0;
-                  });
-
-                  return uniqueFormats.slice(0, 4).map((format, idx) => {
-                    const label = getQualityLabel(format.height);
-                    return (
-                      <motion.a
-                        key={idx}
-                        href={`/api/download/file?url=${encodeURIComponent(info.url)}&formatId=${format.format_id}`}
-                        whileHover={{ scale: 1.01 }}
-                        whileTap={{ scale: 0.99 }}
-                        className={`relative flex items-center justify-between rounded-2xl border p-4 transition-all group ${
-                          idx === 0 
-                            ? "border-blue-200 bg-blue-50/30 hover:bg-blue-50" 
-                            : "border-gray-100 bg-gray-50/50 hover:bg-gray-50"
-                        }`}
-                      >
-                        {idx === 0 && (
-                          <span className="absolute -top-2.5 right-4 rounded-full bg-blue-600 px-3 py-0.5 text-[10px] font-bold text-white shadow-lg z-10">
-                            Recommended
-                          </span>
-                        )}
-                        <div className="flex items-center gap-4">
-                          <div className={`flex h-12 w-12 items-center justify-center rounded-xl shadow-sm transition-colors ${
-                            idx === 0 ? "bg-blue-600 text-white" : "bg-white group-hover:bg-blue-600 group-hover:text-white"
-                          }`}>
-                            <Download size={20} />
-                          </div>
-                          <div>
-                            <p className="text-sm font-black text-gray-900">Download {label}</p>
-                            <p className="text-[11px] font-bold text-gray-400">
-                              {format.ext.toUpperCase()} • {(format.filesize / (1024 * 1024)).toFixed(1)} MB
-                            </p>
-                          </div>
-                        </div>
-                        <ExternalLink size={16} className="text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </motion.a>
-                    );
-                  });
-                })()
-              )}
+                <ExternalLink size={16} className="text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </motion.button>
 
               <AdPlaceholder slot="content" className="!my-2" />
-
-              <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-gray-900 py-3.5 text-sm font-bold text-white transition-all hover:bg-gray-800 hover:scale-[1.01] active:scale-[0.99]">
-                <Music size={18} />
-                Download MP3 Audio
-              </button>
 
               <div className="pt-4 text-center space-y-2">
                 <p className="text-[10px] font-bold text-red-500 uppercase tracking-tighter animate-pulse">

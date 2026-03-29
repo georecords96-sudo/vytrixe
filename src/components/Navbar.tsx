@@ -11,10 +11,12 @@ export function Navbar() {
           href="/" 
           className="flex items-center gap-2 shrink-0 transition-transform hover:scale-105 active:scale-95 group"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/30 transition-shadow">
-            <Play size={16} fill="currentColor" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/30 transition-shadow">
+            <Play size={20} fill="currentColor" />
           </div>
-          <img src="/logo.png" alt="Vytrixe" className="h-8 w-auto" />
+          <span className="text-xl sm:text-3xl font-bold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 uppercase">
+            Vytrixe
+          </span>
         </Link>
         <div className="hidden items-center gap-6 lg:gap-8 md:flex">
           <Link href="/download-tiktok-video" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">TikTok</Link>
