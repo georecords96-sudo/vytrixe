@@ -45,26 +45,22 @@ export function SEOPage({ platform, title, subtitle, content, faqData }: SEOPage
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
+  const [videoUrl, setVideoUrl] = useState("");
 
   const handleSearch = async (url: string) => {
+    setVideoUrl(url);
     setLoading(true);
     setError(null);
     setVideoInfo(null);
 
     try {
-      // Stage 1: Fast Meta Fetch
-      const metaResponse = await axios.post("/api/download", { url, isMeta: true });
-      setVideoInfo(metaResponse.data);
-      setLoading(false); // Immediate visual feedback
-
-      // Stage 2: Background Full Info Fetch
-      try {
-        const fullResponse = await axios.post("/api/download", { url, isMeta: false });
-        setVideoInfo(fullResponse.data);
-      } catch (err) {
-        console.error("Failed to fetch full quality options", err);
-        // We don't show an error here if we already have meta, 
-        // but maybe we can show a retry button in the card?
+      const response = await axios.post("/api/download", { url });
+      
+      if (response.data && response.data.url) {
+        setVideoInfo(response.data);
+        setLoading(false);
+      } else {
+        throw new Error(response.data.error || "Video URL not found.");
       }
     } catch (err: any) {
       setError(err.response?.data?.error || `Failed to process ${platform} video.`);
@@ -105,7 +101,11 @@ export function SEOPage({ platform, title, subtitle, content, faqData }: SEOPage
         {error && <ErrorAlert message={error} onClear={() => setError(null)} />}
         
         {videoInfo && !loading && (
-          <ResultCard info={videoInfo} onReset={() => setVideoInfo(null)} />
+          <ResultCard 
+            info={videoInfo} 
+            videoUrl={videoUrl}
+            onReset={() => setVideoInfo(null)} 
+          />
         )}
 
         <AdsterraAds 
